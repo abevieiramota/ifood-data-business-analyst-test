@@ -1,0 +1,16 @@
+id,attr,type,action
+7829,Year_Birth,outlier,deleted
+11004,Year_Birth,outlier,deleted
+1150,Year_Birth,outlier,deleted
+433,Marital_Status,unknown meaning,nothing
+7660,Marital_Status,unknown meaning,nothing
+92,Marital_Status,unknown meaning,nothing
+7734,Marital_Status,unknown meaning,nothing
+4369,Marital_Status,unknown meaning,nothing
+492,Marital_Status,unknown meaning,nothing
+11133,Marital_Status,unknown meaning,nothing
+9432,Income,outlier,deleted
+5255,Pct_MntGoldProds,outlier,deleted
+4246,Pct_MntGoldProds,outlier,deleted
+6237,Pct_MntGoldProds,outlier,deleted
+10311,Pct_MntGoldProds,outlier,deleted

@@ -1,10 +1,26 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import os
 import pandas as pd
 import re
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILEPATH = os.path.join(BASE_DIR, '../data/ml_project1_data.csv')
+DATA_FILEPATH = os.path.join(BASE_DIR, "../data/ml_project1_data.csv")
 REPORTS_DIR = os.path.join(BASE_DIR, "../reports")
+WARN_FILEPATH = os.path.join(REPORTS_DIR, "warns.csv")
+
+if not os.path.isfile(WARN_FILEPATH):
+
+    with open(WARN_FILEPATH, "w", encoding="UTF-8") as f:
+        f.write("id,attr,type,action\n")
+
+
+def register_warn(logs):
+
+    with open(WARN_FILEPATH, "a", encoding="UTF-8") as f:
+        for log in logs:
+            f.write(f"{log['id']},{log['attr']},{log['type']},{log['action']}\n")
 
 
 def iqr_outliers(v, kind='mild'):
@@ -32,8 +48,6 @@ def read_data():
 
 def apply_feature_engineering_1(df):
 
-    previous_columns = df.columns
-
     # Dt_Customer
     df["Dt_Customer"] = df["Dt_Customer"].apply(lambda t: pd.to_datetime(t, format="%Y-%m-%d"))
     df["Year_Dt_Customer"] = df["Dt_Customer"].dt.year
@@ -43,7 +57,7 @@ def apply_feature_engineering_1(df):
     df["Is_Recency_gt_30"] = df["Recency"] > 30
 
     # Mnt*
-    mnt_columns = ["MntFruits", "MntMeatProducts", "MntFishProducts", "MntSweetProducts"]
+    mnt_columns = ["MntFruits", "MntMeatProducts", "MntFishProducts", "MntSweetProducts", "MntWines"]
     
     df["Total_Mnt"] = df.loc[:, mnt_columns].sum(axis=1)
     
@@ -68,6 +82,30 @@ def apply_feature_engineering_1(df):
     df["Pct_NumDealsPurchase"] = df["NumDealsPurchases"] / df["Total_Purchases"]
 
     # MntGoldProds
-    df["Pct_MntGoldProds"] = df["MntGoldProds"] / df["Total_Purchases"]
+    df["Pct_MntGoldProds"] = df["MntGoldProds"] / df["Total_Mnt"]
 
-    return df.drop(columns=previous_columns)
+    return df
+
+
+def clean_data_1(df):
+
+    df = df.drop(index=
+        [
+            # Year_Birth outlier
+            7829, 11004, 1150,
+            # Income outlier
+            9432
+        ]
+    )
+
+    return df
+
+
+def clean_data_2(df):
+
+    df = df.drop(index=[
+        # Pct_MntGoldProds outlier
+        5255, 4246, 6237, 10311
+    ])
+
+    return df
