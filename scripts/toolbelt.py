@@ -3,12 +3,14 @@
 
 import os
 import pandas as pd
-import re
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILEPATH = os.path.join(BASE_DIR, "../data/ml_project1_data.csv")
+DATA_DIR = os.path.join(BASE_DIR, "../data")
+DATA_FILEPATH = os.path.join(DATA_DIR, "ml_project1_data.csv")
 REPORTS_DIR = os.path.join(BASE_DIR, "../reports")
 WARN_FILEPATH = os.path.join(REPORTS_DIR, "warns.csv")
+CLEANED_DATA_FILEPATH = os.path.join(DATA_DIR, "cleaned_ml_project1_data.csv")
+RFM_DATA_FILEPATH = os.path.join(DATA_DIR, "rfm_cleaned_ml_project1_data.csv")
 
 if not os.path.isfile(WARN_FILEPATH):
 
@@ -51,7 +53,7 @@ def apply_feature_engineering_1(df):
     # Dt_Customer
     df["Dt_Customer"] = df["Dt_Customer"].apply(lambda t: pd.to_datetime(t, format="%Y-%m-%d"))
     df["Year_Dt_Customer"] = df["Dt_Customer"].dt.year
-    df["Mnt_Years_Relationship"] = df["Year_Dt_Customer"].max() + 1 - df["Year_Dt_Customer"]
+    df["Total_Days_Relationship"] = (pd.to_datetime('01/01/2016', format='%d/%m/%Y') - df["Dt_Customer"]).dt.days
 
     # Recency
     df["Is_Recency_gt_30"] = df["Recency"] > 30
@@ -60,6 +62,8 @@ def apply_feature_engineering_1(df):
     mnt_columns = ["MntFruits", "MntMeatProducts", "MntFishProducts", "MntSweetProducts", "MntWines"]
     
     df["Total_Mnt"] = df.loc[:, mnt_columns].sum(axis=1)
+
+    df["Total_Mnt_Per_Total_Days_Relationship"] = df["Total_Mnt"].div(df["Total_Days_Relationship"], axis=0)
     
     pct_mnt_columns = [f"Pct_{c}" for c in mnt_columns]
     df[pct_mnt_columns] = df[mnt_columns].div(df["Total_Mnt"], axis=0)
@@ -67,11 +71,12 @@ def apply_feature_engineering_1(df):
     df["Max_Mnt_Type"] = df[mnt_columns].idxmax(axis=1)
 
     # NumDealsPurchase
-    df["Per_Year_NumDealsPurchases"] = df["NumDealsPurchases"].div(df["Mnt_Years_Relationship"], axis=0)
+    df["NumDealsPurchases_Per_Total_Days_Relationship"] = df["NumDealsPurchases"].div(df["Total_Days_Relationship"], axis=0)
 
     # Num{sales_channel}Purchase
     num_sales_channel_purchase_columns = ["NumWebPurchases", "NumCatalogPurchases", "NumStorePurchases"]
     df["Total_Purchases"] = df.loc[:, num_sales_channel_purchase_columns].sum(axis=1)
+    df["Total_Purchases_Per_Total_Days_Relationship"] = df["Total_Purchases"].div(df["Total_Days_Relationship"], axis=0)
     
     pct_num_sales_channel_purchase_columns = [f"Pct_{c}" for c in num_sales_channel_purchase_columns]
     df[pct_num_sales_channel_purchase_columns] = df[num_sales_channel_purchase_columns].div(df["Total_Purchases"], axis=0)
@@ -107,5 +112,11 @@ def clean_data_2(df):
         # Pct_MntGoldProds outlier
         5255, 4246, 6237, 10311
     ])
+
+    return df
+
+def read_cleaned_data():
+
+    df = pd.read_csv(CLEANED_DATA_FILEPATH, index_col="ID")
 
     return df
